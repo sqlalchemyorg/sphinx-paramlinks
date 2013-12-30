@@ -23,7 +23,8 @@ Just turn it on in ``conf.py``::
 Stylesheet
 ==========
 
-The paragraph link involves a short stylesheet.  This sheet is called
+The paragraph link involves a short stylesheet, to allow the links to
+be visible when hovered.  This sheet is called
 ``sphinx_paramlinks.css`` and the plugin will copy it to the ``_static``
 directory of the output automatically.   The stylesheet is added to the
 ``css_files`` list present in the template namespace for Sphinx via the
@@ -44,6 +45,7 @@ Features
   The directive makes use of the existing Python role to do the method/function
   lookup, using the ``:obj:`` role; then the parameter name is applied separately
   to produce the final reference link.
+
 
 Compatibility
 =============
@@ -86,11 +88,15 @@ comes back out.   This relies on as little of how Sphinx does its
 thing as possible, rather than going with custom domains and heavy use
 of injected APIs which may change in future releases.
 
-Future Enhancements
-===================
+Future Enhancements / Missing Features
+======================================
 
 The extension currently does only ``:param:`` elements within the
 Python role, but could also be expanded to support other Python role
 elements such as ``:returns:``, ``:raises:``, etc., and perhaps also
 could be made to support similar features in other roles.
 
+Another area that's not addressed at all is search.   While the params here
+are linked, these objects are currently not part of the search index Sphinx
+creates in any usable way.   I don't know what would be involved to make that
+work.
