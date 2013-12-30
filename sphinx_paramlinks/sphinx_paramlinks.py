@@ -64,7 +64,10 @@ class LinkParams(Transform):
                         nodes.reference('', '',
                                 nodes.Text(u"¶", u"¶"),
                                 refid=refid,
-                                classes=['paramlink']
+                                # paramlink is our own CSS class, headerlink
+                                # is theirs.  Trying to get everything we can for existing
+                                # symbols...
+                                classes=['paramlink', 'headerlink']
                         )
                     )
 
