@@ -34,8 +34,8 @@ Features
 ========
 
 * ``:param:`` directives within Sphinx function/method descriptions
-   will be given a paragraph link so that they can be linked
-   to externally.
+  will be given a paragraph link so that they can be linked
+  to externally.
 
 * A new text role ``:paramref:`` is added, which works like ``:meth:``,
   ``:func:``, etc.  Just append the parameter name as an additional token::
