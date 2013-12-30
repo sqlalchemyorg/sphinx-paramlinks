@@ -12,7 +12,7 @@ readme = os.path.join(os.path.dirname(__file__), 'README.rst')
 
 setup(name='sphinx-paramlinks',
       version=VERSION,
-      description="Adds linkable parameters info to Python docstrings in Sphinx",
+      description="Allows param links in Sphinx function/method descriptions to be linkable",
       long_description=open(readme).read(),
       classifiers=[
       'Development Status :: 3 - Alpha',
@@ -30,6 +30,5 @@ setup(name='sphinx-paramlinks',
       url='http://bitbucket.org/zzzeek/sphinx-paramlinks',
       license='MIT',
       packages=['sphinx_paramlinks'],
-      py_modules=('autodoc_links',),
       zip_safe=False,
 )

@@ -21,6 +21,8 @@ def autodoc_process_docstring(app, what, name, obj, options, lines):
         lines[:] = [_cvt_param(name, line) for line in lines]
 
 class LinkParams(Transform):
+    # apply references targets and optional references
+    # to nodes that contain our target text.
     default_priority = 210
 
     def apply(self):
@@ -83,7 +85,14 @@ def lookup_params(app, env, node, contnode):
     resolve_target = ".".join(tokens[0:-1])
     paramname = tokens[-1]
 
-    domain = env.domains['py']
+    # emulate the approach within sphinx.environment.BuildEnvironment.resolve_references
+    try:
+        domain = env.domains[node['refdomain']]  # hint: this will be 'py'
+    except KeyError:
+        return None
+
+    # BuildEnvironment doesn't pass us "fromdocname" here as the
+    # fallback, oh well
     refdoc = node.get('refdoc', None)
 
     # we call the same "resolve_xref" that BuildEnvironment just tried

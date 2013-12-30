@@ -65,15 +65,32 @@ spent many hours with Sphinx source and tried many different approaches to
 various elements of functionality; hopefully what's here is as simple and
 stable as possible based on the current extension capabilities of Sphinx.
 
-One element that involves using a bit of internals is the usage of the ``sphinx.domains.python.PyXRefRole``
-class, which is currently the Sphinx class that defines roles for things like
-``:meth:``, ``:func:``, etc.  The object is used as-is in order to define the
-``:paramref:`` role; the product of this role is later transformed using standard
-hooks.
+One element that involves using a bit of internals is the usage of the
+``sphinx.domains.python.PyXRefRole`` class, which is currently the
+Sphinx class that defines roles for things like ``:meth:``,
+``:func:``, etc.  The object is used as-is in order to define the
+``:paramref:`` role; the product of this role is later transformed
+using standard hooks.
 
-Overall, the approach here is to apply extra
-information to constructs going into the Sphinx system, then do some transformations
-as the data comes back out.   This relies on as little of how Sphinx does its
+Another assumption is that in order to locate the RST nodes Sphinx
+creates for the ``:param:`` tags, we look at ``nodes.strong``,
+assuming that this is the type of node currently used to render
+``:param:`` within RST.  If this changes, or needs to be expanded to
+support other domains, this traversal can be opened up as needed.
+This part was difficult as Sphinx really doesn't provide any hooks
+into how the "Info Field List" aspect of domains is handled.
+
+Overall, the approach here is to apply extra information to constructs
+going into the Sphinx system, then do some transformations as the data
+comes back out.   This relies on as little of how Sphinx does its
 thing as possible, rather than going with custom domains and heavy use
 of injected APIs which may change in future releases.
+
+Future Enhancements
+===================
+
+The extension currently does only ``:param:`` elements within the
+Python role, but could also be expanded to support other Python role
+elements such as ``:returns:``, ``:raises:``, etc., and perhaps also
+could be made to support similar features in other roles.
 
