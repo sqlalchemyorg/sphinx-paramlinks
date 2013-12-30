@@ -44,6 +44,20 @@ class LinkParams(Transform):
 
                 if is_html:
                     # add the "p" thing only if we're the HTML builder.
+
+                    # using a real ¶, surprising, right?
+                    # http://docutils.sourceforge.net/FAQ.html#how-can-i-represent-esoteric-characters-e-g-character-entities-in-a-document
+
+                    # "For example, say you want an em-dash (XML
+                    # character entity &mdash;, Unicode character
+                    # U+2014) in your document: use a real em-dash.
+                    # Insert concrete characters (e.g. type a real em-
+                    # dash) into your input file, using whatever
+                    # encoding suits your application, and tell
+                    # Docutils the input encoding. Docutils uses
+                    # Unicode internally, so the em-dash character is
+                    # a real em-dash internally."   OK !
+
                     ref.parent.insert(len(ref.parent) - 2,
                         nodes.reference('', '',
                                 nodes.Text(u"¶", u"¶"),
@@ -93,8 +107,14 @@ def copy_stylesheet(app, exception):
     if app.builder.name != 'html' or exception:
         return
     app.info(bold('Copying sphinx_paramlinks stylesheet... '), nonl=True)
-    dest = os.path.join(app.builder.outdir, '_static', 'sphinx_paramlinks.css')
+
     source = os.path.abspath(os.path.dirname(__file__))
+
+    # the '_static' directory name is hardcoded in
+    # sphinx.builders.html.StandaloneHTMLBuilder.copy_static_files.
+    # would be nice if Sphinx could improve the API here so that we just
+    # give it the path to a .css file and it does the right thing.
+    dest = os.path.join(app.builder.outdir, '_static', 'sphinx_paramlinks.css')
     copyfile(os.path.join(source, "sphinx_paramlinks.css"), dest)
     app.info('done')
 

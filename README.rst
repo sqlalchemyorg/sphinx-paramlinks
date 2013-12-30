@@ -20,13 +20,60 @@ Just turn it on in ``conf.py``::
                 # ...
             ]
 
+Stylesheet
+==========
+
+The paragraph link involves a short stylesheet.  This sheet is called
+``sphinx_paramlinks.css`` and the plugin will copy it to the ``_static``
+directory of the output automatically.   The stylesheet is added to the
+``css_files`` list present in the template namespace for Sphinx via the
+``Sphinx.add_stylesheet()`` hook.
 
 Features
 ========
 
-* ``:param:`` directives will be given a paragraph link so that they can be linked
+* ``:param:`` directives within Sphinx function/method descriptions
+   will be given a paragraph link so that they can be linked
    to externally.
 
-* TODO: a new directive ``:param:`` will allow these links to be indicated
-  in source.
+* A new text role ``:paramref:`` is added, which works like ``:meth:``,
+  ``:func:``, etc.  Just append the parameter name as an additional token::
+
+     :paramref:`.EnvironmentContext.configure.transactional_ddl`
+
+  The directive makes use of the existing Python role to do the method/function
+  lookup, using the ``:obj:`` role; then the parameter name is applied separately
+  to produce the final reference link.
+
+Compatibility
+=============
+
+Python Compatibility
+--------------------
+
+The extension was developed on Python 2.7, but is compatible with at least
+Python 3.3 as well.  It contains one `u''` literal - these are supported again
+as of Python 3.3.
+
+Sphinx Compatibility
+--------------------
+
+I've tried *very* hard to make as few assumptions as possible about Sphinx
+and to use only very simple public APIs, so that architectural changes in future
+Sphinx versions won't break this plugin.   To come up with this plugin I
+spent many hours with Sphinx source and tried many different approaches to
+various elements of functionality; hopefully what's here is as simple and
+stable as possible based on the current extension capabilities of Sphinx.
+
+One element that involves using a bit of internals is the usage of the ``sphinx.domains.python.PyXRefRole``
+class, which is currently the Sphinx class that defines roles for things like
+``:meth:``, ``:func:``, etc.  The object is used as-is in order to define the
+``:paramref:`` role; the product of this role is later transformed using standard
+hooks.
+
+Overall, the approach here is to apply extra
+information to constructs going into the Sphinx system, then do some transformations
+as the data comes back out.   This relies on as little of how Sphinx does its
+thing as possible, rather than going with custom domains and heavy use
+of injected APIs which may change in future releases.
 
