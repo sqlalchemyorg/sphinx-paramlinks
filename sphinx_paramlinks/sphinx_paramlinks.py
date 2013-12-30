@@ -7,6 +7,9 @@ from sphinx.util.osutil import copyfile
 from sphinx.util.console import bold
 from sphinx.domains.python import PyXRefRole
 
+def _is_html(app):
+    return app.builder.name in ('html', 'readthedocs')   # 'readthedocs', classy
+
 def autodoc_process_docstring(app, what, name, obj, options, lines):
     # locate :param: lines within docstrings.  augment the parameter
     # name with that of the parent object name plus a token we can
@@ -26,7 +29,7 @@ class LinkParams(Transform):
     default_priority = 210
 
     def apply(self):
-        is_html = self.document.settings.env.app.builder.name == 'html'
+        is_html = _is_html(self.document.settings.env.app)
 
         # seach <strong> nodes, which will include the titles for
         # those :param: directives, looking for our special token.
@@ -42,7 +45,7 @@ class LinkParams(Transform):
                     nodes.target('', '', ids=[refid])
                 )
                 del ref[0]
-                ref.insert(0, nodes.strong(paramname, paramname))
+                ref.insert(0, nodes.Text(paramname, paramname))
 
                 if is_html:
                     # add the "p" thing only if we're the HTML builder.
@@ -60,7 +63,18 @@ class LinkParams(Transform):
                     # Unicode internally, so the em-dash character is
                     # a real em-dash internally."   OK !
 
-                    ref.parent.insert(len(ref.parent) - 2,
+                    for pos, node in enumerate(ref.parent.children):
+                        # try to figure out where the node with the
+                        # paramname is. thought this was simple, but readthedocs
+                        # proving..it's not.
+                        # TODO: need to take into account a type name
+                        # with the parens.
+                        if isinstance(node, nodes.TextElement) and node.astext() == paramname:
+                            break
+                    else:
+                        return
+
+                    ref.parent.insert(pos + 1,
                         nodes.reference('', '',
                                 nodes.Text(u"¶", u"¶"),
                                 refid=refid,
@@ -116,7 +130,9 @@ def add_stylesheet(app):
     app.add_stylesheet('sphinx_paramlinks.css')
 
 def copy_stylesheet(app, exception):
-    if app.builder.name != 'html' or exception:
+    app.info(bold('The name of the builder is: %s' % app.builder.name), nonl=True)
+
+    if not _is_html(app) or exception:
         return
     app.info(bold('Copying sphinx_paramlinks stylesheet... '), nonl=True)
 

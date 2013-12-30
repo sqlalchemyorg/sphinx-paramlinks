@@ -30,5 +30,6 @@ setup(name='sphinx-paramlinks',
       url='http://bitbucket.org/zzzeek/sphinx-paramlinks',
       license='MIT',
       packages=['sphinx_paramlinks'],
+      include_package_data=True,
       zip_safe=False,
 )
