@@ -3,16 +3,16 @@ import os
 import re
 
 
-v = open(os.path.join(os.path.dirname(__file__), 'autodoc_links.py'))
+v = open(os.path.join(os.path.dirname(__file__), 'sphinx_paramlinks/__init__.py'))
 VERSION = re.compile(r".*__version__ = '(.*?)'", re.S).match(v.read()).group(1)
 v.close()
 
 readme = os.path.join(os.path.dirname(__file__), 'README.rst')
 
 
-setup(name='autodoc_links',
+setup(name='sphinx-paramlinks',
       version=VERSION,
-      description="Adds linkable parameters and enhanced superclass info to Sphinx autodoc",
+      description="Adds linkable parameters info to Python docstrings in Sphinx",
       long_description=open(readme).read(),
       classifiers=[
       'Development Status :: 3 - Alpha',
@@ -24,11 +24,12 @@ setup(name='autodoc_links',
       'Programming Language :: Python :: Implementation :: PyPy',
       'Topic :: Documentation',
       ],
-      keywords='Sphinx',
+      keywords='sphinx',
       author='Mike Bayer',
       author_email='mike@zzzcomputing.com',
-      url='http://bitbucket.org/zzzeek/autodoc_links',
+      url='http://bitbucket.org/zzzeek/sphinx-paramlinks',
       license='MIT',
+      packages=['sphinx_paramlinks'],
       py_modules=('autodoc_links',),
       zip_safe=False,
 )
