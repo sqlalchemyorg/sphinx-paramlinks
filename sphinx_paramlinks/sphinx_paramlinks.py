@@ -39,12 +39,16 @@ class LinkParams(Transform):
             if text.startswith("_sphinx_paramlinks_"):
                 components = re.match(r'_sphinx_paramlinks_(.+)\.(.+)$', text)
                 location, paramname = components.group(1, 2)
+                literal_match = re.match(r'^``(.+?)``$', paramname)
+                if literal_match:
+                    paramname = literal_match.group(1)
 
                 refid = "%s.params.%s" % (location, paramname)
                 ref.parent.insert(0,
                     nodes.target('', '', ids=[refid])
                 )
                 del ref[0]
+
                 ref.insert(0, nodes.Text(paramname, paramname))
 
                 if is_html:
