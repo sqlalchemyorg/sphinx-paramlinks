@@ -54,7 +54,7 @@ Python Compatibility
 --------------------
 
 The extension was developed on Python 2.7, but is compatible with at least
-Python 3.3 as well.  It contains one `u''` literal - these are supported again
+Python 3.3 as well.  It contains one ``u''`` literal - these are supported again
 as of Python 3.3.
 
 Sphinx Compatibility
