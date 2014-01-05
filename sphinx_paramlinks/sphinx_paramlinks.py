@@ -127,7 +127,10 @@ def lookup_params(app, env, node, contnode):
     if newnode is not None:
         # assuming we found it, tack the paramname back onto to the final
         # URI.
-        newnode['refuri'] += ".params." + paramname
+        if 'refuri' in newnode:
+            newnode['refuri'] += ".params." + paramname
+        elif 'refid' in newnode:
+            newnode['refid'] += ".params." + paramname
     return newnode
 
 def add_stylesheet(app):
