@@ -42,8 +42,12 @@ class LinkParams(Transform):
                 literal_match = re.match(r'^``(.+?)``$', paramname)
                 if literal_match:
                     paramname = literal_match.group(1)
+                refname = paramname
+                eq_match = re.match(r'(.+?)=.+$', refname)
+                if eq_match:
+                    refname = eq_match.group(1)
 
-                refid = "%s.params.%s" % (location, paramname)
+                refid = "%s.params.%s" % (location, refname)
                 ref.parent.insert(0,
                     nodes.target('', '', ids=[refid])
                 )
