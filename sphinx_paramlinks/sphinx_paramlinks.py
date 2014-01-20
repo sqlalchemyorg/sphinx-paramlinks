@@ -15,6 +15,10 @@ def autodoc_process_docstring(app, what, name, obj, options, lines):
     # name with that of the parent object name plus a token we can
     # spot later.
     def _cvt_param(name, line):
+        if name.endswith(".__init__"):
+            # kill off __init__ if present, the links are always
+            # off the class
+            name = name[0:-9]
         def cvt(m):
             return ":param %s_sphinx_paramlinks_%s.%s:" % (
                             m.group(1) or '', name, m.group(2))
@@ -126,20 +130,8 @@ def lookup_params(app, env, node, contnode):
     # along with the classname/methodname/funcname minus the parameter
     # part.
 
-    # see if this is a class constructor first...
     newnode = domain.resolve_xref(env, refdoc, app.builder,
-                                "class", resolve_target, node, contnode)
-    if newnode:
-        # if yes, see if the __init__ is documented explicitly
-        methnode = domain.resolve_xref(env, refdoc, app.builder,
-                                "meth", resolve_target + ".__init__", node, contnode)
-        if methnode:
-            newnode = methnode
-
-    else:
-        # if no, just look up based on "obj"
-        newnode = domain.resolve_xref(env, refdoc, app.builder,
-                                  "obj", resolve_target, node, contnode)
+                              "obj", resolve_target, node, contnode)
 
     if newnode is not None:
         # assuming we found it, tack the paramname back onto to the final
