@@ -125,7 +125,20 @@ def lookup_params(app, env, node, contnode):
     # it can find, e.g. the "object" role (or we could use :meth:/:func:)
     # along with the classname/methodname/funcname minus the parameter
     # part.
+
+    # see if this is a class constructor first...
     newnode = domain.resolve_xref(env, refdoc, app.builder,
+                                "class", resolve_target, node, contnode)
+    if newnode:
+        # if yes, see if the __init__ is documented explicitly
+        methnode = domain.resolve_xref(env, refdoc, app.builder,
+                                "meth", resolve_target + ".__init__", node, contnode)
+        if methnode:
+            newnode = methnode
+
+    else:
+        # if no, just look up based on "obj"
+        newnode = domain.resolve_xref(env, refdoc, app.builder,
                                   "obj", resolve_target, node, contnode)
 
     if newnode is not None:
