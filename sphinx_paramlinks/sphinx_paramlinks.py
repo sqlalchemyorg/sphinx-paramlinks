@@ -48,7 +48,7 @@ def autodoc_process_docstring(app, what, name, obj, options, lines):
 
         def cvt(m):
             modifier, objname, paramname = m.group(1) or '', name, m.group(2)
-            refname = _refname_from_paramname(paramname)
+            refname = _refname_from_paramname(paramname, strip_markup=True)
             doc_idx.append(
                 ('single', '%s (%s parameter)' % (refname, objname),
                  '%s.params.%s' % (objname, refname), '')
@@ -62,7 +62,7 @@ def autodoc_process_docstring(app, what, name, obj, options, lines):
         lines[:] = [_cvt_param(name, line) for line in lines]
 
 
-def _refname_from_paramname(paramname):
+def _refname_from_paramname(paramname, strip_markup=False):
     literal_match = re.match(r'^``(.+?)``$', paramname)
     if literal_match:
         paramname = literal_match.group(1)
@@ -70,6 +70,8 @@ def _refname_from_paramname(paramname):
     eq_match = re.match(r'(.+?)=.+$', refname)
     if eq_match:
         refname = eq_match.group(1)
+    if strip_markup:
+        refname = re.sub(r'\\', '', refname)
     return refname
 
 
