@@ -48,9 +48,10 @@ def autodoc_process_docstring(app, what, name, obj, options, lines):
 
         def cvt(m):
             modifier, objname, paramname = m.group(1) or '', name, m.group(2)
+            refname = _refname_from_paramname(paramname)
             doc_idx.append(
-                ('single', '%s (%s parameter)' % (paramname, objname),
-                 '%s.params.%s' % (objname, paramname), '')
+                ('single', '%s (%s parameter)' % (refname, objname),
+                 '%s.params.%s' % (objname, refname), '')
             )
 
             return ":param %s_sphinx_paramlinks_%s.%s:" % (
@@ -59,6 +60,17 @@ def autodoc_process_docstring(app, what, name, obj, options, lines):
 
     if what in ('function', 'method', 'class'):
         lines[:] = [_cvt_param(name, line) for line in lines]
+
+
+def _refname_from_paramname(paramname):
+    literal_match = re.match(r'^``(.+?)``$', paramname)
+    if literal_match:
+        paramname = literal_match.group(1)
+    refname = paramname
+    eq_match = re.match(r'(.+?)=.+$', refname)
+    if eq_match:
+        refname = eq_match.group(1)
+    return refname
 
 
 class LinkParams(Transform):
@@ -77,13 +89,7 @@ class LinkParams(Transform):
             if text.startswith("_sphinx_paramlinks_"):
                 components = re.match(r'_sphinx_paramlinks_(.+)\.(.+)$', text)
                 location, paramname = components.group(1, 2)
-                literal_match = re.match(r'^``(.+?)``$', paramname)
-                if literal_match:
-                    paramname = literal_match.group(1)
-                refname = paramname
-                eq_match = re.match(r'(.+?)=.+$', refname)
-                if eq_match:
-                    refname = eq_match.group(1)
+                refname = _refname_from_paramname(paramname)
 
                 refid = "%s.params.%s" % (location, refname)
                 ref.parent.insert(
