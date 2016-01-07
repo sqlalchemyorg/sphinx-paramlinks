@@ -46,6 +46,9 @@ Features
   lookup, using the ``:obj:`` role; then the parameter name is applied separately
   to produce the final reference link.
 
+* The paramlinks are also added to the master index as well as the list
+  of domain objects, which allows them to be searchable through the
+  searchindex.js system.  (new in 0.3.0)
 
 Compatibility
 =============

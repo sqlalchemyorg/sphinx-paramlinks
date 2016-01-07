@@ -6,26 +6,60 @@ import os
 from sphinx.util.osutil import copyfile
 from sphinx.util.console import bold
 from sphinx.domains.python import PyXRefRole
+from sphinx.domains.python import PythonDomain
+
+# the searchindex.js system relies upon the object types
+# in the PythonDomain to create search entries
+from sphinx.domains import ObjType
+
+PythonDomain.object_types['parameter'] = ObjType('parameter', 'param')
+
 
 def _is_html(app):
-    return app.builder.name in ('html', 'readthedocs')   # 'readthedocs', classy
+    return app.builder.name in ('html', 'readthedocs')
+
+
+def _tempdata(app):
+    if '_sphinx_paramlinks_index' in app.env.indexentries:
+        idx = app.env.indexentries['_sphinx_paramlinks_index']
+    else:
+        app.env.indexentries['_sphinx_paramlinks_index'] = idx = {}
+    return idx
+
 
 def autodoc_process_docstring(app, what, name, obj, options, lines):
     # locate :param: lines within docstrings.  augment the parameter
     # name with that of the parent object name plus a token we can
-    # spot later.
+    # spot later.  Also put an index entry in a temporary collection.
+
+    idx = _tempdata(app)
+
+    docname = app.env.temp_data['docname']
+    if docname in idx:
+        doc_idx = idx[docname]
+    else:
+        idx[docname] = doc_idx = []
+
     def _cvt_param(name, line):
         if name.endswith(".__init__"):
             # kill off __init__ if present, the links are always
             # off the class
             name = name[0:-9]
+
         def cvt(m):
+            modifier, objname, paramname = m.group(1) or '', name, m.group(2)
+            doc_idx.append(
+                ('single', '%s (%s parameter)' % (paramname, objname),
+                 '%s.params.%s' % (objname, paramname), '')
+            )
+
             return ":param %s_sphinx_paramlinks_%s.%s:" % (
-                            m.group(1) or '', name, m.group(2))
+                modifier, objname, paramname)
         return re.sub(r'^:param ([^:]+? )?([^:]+?):', cvt, line)
 
     if what in ('function', 'method', 'class'):
         lines[:] = [_cvt_param(name, line) for line in lines]
+
 
 class LinkParams(Transform):
     # apply references targets and optional references
@@ -52,7 +86,8 @@ class LinkParams(Transform):
                     refname = eq_match.group(1)
 
                 refid = "%s.params.%s" % (location, refname)
-                ref.parent.insert(0,
+                ref.parent.insert(
+                    0,
                     nodes.target('', '', ids=[refid])
                 )
                 del ref[0]
@@ -77,23 +112,26 @@ class LinkParams(Transform):
 
                     for pos, node in enumerate(ref.parent.children):
                         # try to figure out where the node with the
-                        # paramname is. thought this was simple, but readthedocs
-                        # proving..it's not.
+                        # paramname is. thought this was simple, but
+                        # readthedocs proving..it's not.
                         # TODO: need to take into account a type name
                         # with the parens.
-                        if isinstance(node, nodes.TextElement) and node.astext() == paramname:
+                        if isinstance(node, nodes.TextElement) and \
+                                node.astext() == paramname:
                             break
                     else:
                         return
 
-                    ref.parent.insert(pos + 1,
-                        nodes.reference('', '',
-                                nodes.Text(u"¶", u"¶"),
-                                refid=refid,
-                                # paramlink is our own CSS class, headerlink
-                                # is theirs.  Trying to get everything we can for existing
-                                # symbols...
-                                classes=['paramlink', 'headerlink']
+                    ref.parent.insert(
+                        pos + 1,
+                        nodes.reference(
+                            '', '',
+                            nodes.Text(u"¶", u"¶"),
+                            refid=refid,
+                            # paramlink is our own CSS class, headerlink
+                            # is theirs.  Trying to get everything we can for
+                            # existing symbols...
+                            classes=['paramlink', 'headerlink']
                         )
                     )
 
@@ -114,7 +152,8 @@ def lookup_params(app, env, node, contnode):
     resolve_target = ".".join(tokens[0:-1])
     paramname = tokens[-1]
 
-    # emulate the approach within sphinx.environment.BuildEnvironment.resolve_references
+    # emulate the approach within
+    # sphinx.environment.BuildEnvironment.resolve_references
     try:
         domain = env.domains[node['refdomain']]  # hint: this will be 'py'
     except KeyError:
@@ -130,8 +169,9 @@ def lookup_params(app, env, node, contnode):
     # along with the classname/methodname/funcname minus the parameter
     # part.
 
-    newnode = domain.resolve_xref(env, refdoc, app.builder,
-                              "obj", resolve_target, node, contnode)
+    newnode = domain.resolve_xref(
+        env, refdoc, app.builder,
+        "obj", resolve_target, node, contnode)
 
     if newnode is not None:
         # assuming we found it, tack the paramname back onto to the final
@@ -142,11 +182,14 @@ def lookup_params(app, env, node, contnode):
             newnode['refid'] += ".params." + paramname
     return newnode
 
+
 def add_stylesheet(app):
     app.add_stylesheet('sphinx_paramlinks.css')
 
+
 def copy_stylesheet(app, exception):
-    app.info(bold('The name of the builder is: %s' % app.builder.name), nonl=True)
+    app.info(
+        bold('The name of the builder is: %s' % app.builder.name), nonl=True)
 
     if not _is_html(app) or exception:
         return
@@ -162,6 +205,20 @@ def copy_stylesheet(app, exception):
     copyfile(os.path.join(source, "sphinx_paramlinks.css"), dest)
     app.info('done')
 
+
+def build_index(app, doctree):
+    entries = _tempdata(app)
+
+    for docname in entries:
+        doc_entries = entries[docname]
+        app.env.indexentries[docname].extend(doc_entries)
+
+        for sing, desc, ref, extra in doc_entries:
+            app.env.domains['py'].data['objects'][ref] = (docname, 'parameter')
+
+    app.env.indexentries.pop('_sphinx_paramlinks_index')
+
+
 def setup(app):
     app.add_transform(LinkParams)
 
@@ -174,4 +231,4 @@ def setup(app):
     app.connect('builder-inited', add_stylesheet)
     app.connect('build-finished', copy_stylesheet)
     app.connect('missing-reference', lookup_params)
-
+    app.connect('doctree-read', build_index)
