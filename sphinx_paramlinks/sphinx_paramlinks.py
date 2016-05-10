@@ -7,7 +7,8 @@ from sphinx.util.osutil import copyfile
 from sphinx.util.console import bold
 from sphinx.domains.python import PyXRefRole
 from sphinx.domains.python import PythonDomain
-
+from distutils.version import LooseVersion
+from sphinx import __version__
 # the searchindex.js system relies upon the object types
 # in the PythonDomain to create search entries
 from sphinx.domains import ObjType
@@ -49,11 +50,11 @@ def autodoc_process_docstring(app, what, name, obj, options, lines):
         def cvt(m):
             modifier, objname, paramname = m.group(1) or '', name, m.group(2)
             refname = _refname_from_paramname(paramname, strip_markup=True)
-            doc_idx.append(
-                ('single', '%s (%s parameter)' % (refname, objname),
-                 '%s.params.%s' % (objname, refname), '')
-            )
-
+            item = ('single', '%s (%s parameter)' % (refname, objname),
+                    '%s.params.%s' % (objname, refname), '')
+            if LooseVersion(__version__) >= LooseVersion('1.4.0'):
+                item += (None,)
+            doc_idx.append(item)
             return ":param %s_sphinx_paramlinks_%s.%s:" % (
                 modifier, objname, paramname)
         return re.sub(r'^:param ([^:]+? )?([^:]+?):', cvt, line)
@@ -221,7 +222,8 @@ def build_index(app, doctree):
         doc_entries = entries[docname]
         app.env.indexentries[docname].extend(doc_entries)
 
-        for sing, desc, ref, extra in doc_entries:
+        for entry in doc_entries:
+            sing, desc, ref, extra = entry[:4]
             app.env.domains['py'].data['objects'][ref] = (docname, 'parameter')
 
     app.env.indexentries.pop('_sphinx_paramlinks_index')
