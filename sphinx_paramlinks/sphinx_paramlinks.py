@@ -178,9 +178,12 @@ def lookup_params(app, env, node, contnode):
     # along with the classname/methodname/funcname minus the parameter
     # part.
 
-    newnode = domain.resolve_xref(
-        env, refdoc, app.builder,
-        "obj", resolve_target, node, contnode)
+    for search in ["meth", "func"]:
+        newnode = domain.resolve_xref(
+            env, refdoc, app.builder,
+            search, resolve_target, node, contnode)
+        if newnode is not None:
+            break
 
     if newnode is not None:
         # assuming we found it, tack the paramname back onto to the final
