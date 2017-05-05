@@ -43,10 +43,11 @@ Features
      :paramref:`.EnvironmentContext.configure.transactional_ddl`
 
   The directive makes use of the existing Python role to do the method/function
-  lookup, searching first the ``:meth:`` and then the ``:func:`` role; then
-  the parameter name is applied separately to produce the final reference link.
-  (new in 0.3.3, search for ``:meth:`` / ``:func:`` individually rather than
-  using ``:obj:`` which catches lots of things that don't have parameters)
+  lookup, searching first the ``:meth:``, then the ``:class:``, and then  the
+  ``:func:`` role; then the parameter name is applied separately to produce the
+  final reference link. (new in 0.3.4, search for ``:meth:`` / ``:func:`` /
+  ``:class:`` individually  rather than using ``:obj:`` which catches lots of
+  things that don't have parameters)
 
 * The paramlinks are also added to the master index as well as the list
   of domain objects, which allows them to be searchable through the

@@ -178,7 +178,7 @@ def lookup_params(app, env, node, contnode):
     # along with the classname/methodname/funcname minus the parameter
     # part.
 
-    for search in ["meth", "func"]:
+    for search in ["meth", "class", "func"]:
         newnode = domain.resolve_xref(
             env, refdoc, app.builder,
             search, resolve_target, node, contnode)
