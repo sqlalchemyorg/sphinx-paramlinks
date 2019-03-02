@@ -60,6 +60,7 @@ def autodoc_process_docstring(app, what, name, obj, options, lines):
             doc_idx.append(item)
             return ":param %s_sphinx_paramlinks_%s.%s:" % (
                 modifier, objname, paramname)
+        
         def secondary_cvt(m):
             modifier, objname, paramname = m.group(1) or '', name, m.group(2)
             return ":type %s_sphinx_paramlinks_%s.%s:" % (
