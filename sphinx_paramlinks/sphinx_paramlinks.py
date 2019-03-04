@@ -60,7 +60,15 @@ def autodoc_process_docstring(app, what, name, obj, options, lines):
             doc_idx.append(item)
             return ":param %s_sphinx_paramlinks_%s.%s:" % (
                 modifier, objname, paramname)
-        return re.sub(r'^:param ([^:]+? )?([^:]+?):', cvt, line)
+        
+        def secondary_cvt(m):
+            modifier, objname, paramname = m.group(1) or '', name, m.group(2)
+            return ":type %s_sphinx_paramlinks_%s.%s:" % (
+                modifier, objname, paramname)
+        
+        line = re.sub(r'^:param ([^:]+? )?([^:]+?):', cvt, line)
+        line = re.sub(r'^:type ([^:]+? )?([^:]+?):', secondary_cvt, line)
+        return line
 
     if what in ('function', 'method', 'class'):
         lines[:] = [_cvt_param(name, line) for line in lines]
