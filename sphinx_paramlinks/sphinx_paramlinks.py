@@ -292,3 +292,8 @@ def setup(app):
     app.connect("build-finished", copy_stylesheet)
     app.connect("missing-reference", lookup_params)
     app.connect("doctree-read", build_index)
+    return {
+        "parallel_read_safe": True,
+        "parallel_write_safe": True,
+    }
+
