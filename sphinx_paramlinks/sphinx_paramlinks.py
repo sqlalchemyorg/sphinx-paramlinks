@@ -49,7 +49,9 @@ def autodoc_process_docstring(app, what, name, obj, options, lines):
 
     idx = _tempdata(app)
 
-    docname = app.env.temp_data["docname"]
+    docname = app.env.temp_data.get("docname")
+    if not docname:
+        return
     if docname in idx:
         doc_idx = idx[docname]
     else:
