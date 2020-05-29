@@ -15,6 +15,13 @@ from sphinx import __version__
 from sphinx.domains import ObjType
 from sphinx.util import logging
 
+try:
+    # coming up in 3.1
+    from sphinx.domains.python import ObjectEntry
+except:
+    from collections import namedtuple
+    ObjectEntry = namedtuple('ObjectEntry', ['docname', 'node_id', 'objtype'])
+
 PythonDomain.object_types["parameter"] = ObjType("parameter", "param")
 
 LOG = logging.getLogger(__name__)
@@ -74,6 +81,7 @@ def autodoc_process_docstring(app, what, name, obj, options, lines):
             )
             if LooseVersion(__version__) >= LooseVersion("1.4.0"):
                 item += (None,)
+
             doc_idx.append(item)
             return ":param %s_sphinx_paramlinks_%s.%s:" % (
                 modifier,
@@ -265,7 +273,7 @@ def build_index(app, doctree):
         if LooseVersion(__version__) >= LooseVersion("3.0.0"):
             for entry in doc_entries:
                 sing, desc, ref, extra = entry[:4]
-                app.env.domains["py"].data["objects"][ref] = (
+                app.env.domains["py"].data["objects"][ref] = ObjectEntry(
                     docname,
                     ref,
                     "parameter",
