@@ -2,5 +2,6 @@ recursive-include sphinx_paramlinks *.py *.css
 
 include README* LICENSE
 
+exclude pyproject.toml
 
 

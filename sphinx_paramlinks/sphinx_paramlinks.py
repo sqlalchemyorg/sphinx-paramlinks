@@ -1,26 +1,28 @@
 #!coding: utf-8
+from distutils.version import LooseVersion
+import os
 import re
+
 from docutils import nodes
 from docutils.transforms import Transform
-import os
-from sphinx.util.osutil import copyfile
-from sphinx.util.console import bold
-from sphinx.domains.python import PyXRefRole
-from sphinx.domains.python import PythonDomain
-from distutils.version import LooseVersion
 from sphinx import __version__
+from sphinx.domains import ObjType
+from sphinx.domains.python import PythonDomain
+from sphinx.domains.python import PyXRefRole
+from sphinx.util import logging
+from sphinx.util.console import bold
+from sphinx.util.osutil import copyfile
 
 # the searchindex.js system relies upon the object types
 # in the PythonDomain to create search entries
-from sphinx.domains import ObjType
-from sphinx.util import logging
 
 try:
     # coming up in 3.1
     from sphinx.domains.python import ObjectEntry
 except:
     from collections import namedtuple
-    ObjectEntry = namedtuple('ObjectEntry', ['docname', 'node_id', 'objtype'])
+
+    ObjectEntry = namedtuple("ObjectEntry", ["docname", "node_id", "objtype"])
 
 PythonDomain.object_types["parameter"] = ObjType("parameter", "param")
 
@@ -306,4 +308,3 @@ def setup(app):
         "parallel_read_safe": True,
         "parallel_write_safe": True,
     }
-
