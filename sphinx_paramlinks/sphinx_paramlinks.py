@@ -6,23 +6,18 @@ import re
 from docutils import nodes
 from docutils.transforms import Transform
 from sphinx import __version__
+from sphinx import addnodes
 from sphinx.domains import ObjType
+from sphinx.domains.python import ObjectEntry
 from sphinx.domains.python import PythonDomain
 from sphinx.domains.python import PyXRefRole
 from sphinx.util import logging
 from sphinx.util.console import bold
 from sphinx.util.osutil import copyfile
 
+
 # the searchindex.js system relies upon the object types
 # in the PythonDomain to create search entries
-
-try:
-    # coming up in 3.1
-    from sphinx.domains.python import ObjectEntry
-except:
-    from collections import namedtuple
-
-    ObjectEntry = namedtuple("ObjectEntry", ["docname", "node_id", "objtype"])
 
 PythonDomain.object_types["parameter"] = ObjType("parameter", "param")
 
@@ -38,9 +33,6 @@ def _is_html(app):
 
 def _indexentries(env):
     return env.domains["index"].entries
-
-    # pre 3.0:
-    # return env.indexentries
 
 
 def _tempdata(app):
@@ -120,6 +112,37 @@ def _refname_from_paramname(paramname, strip_markup=False):
     return refname
 
 
+class ApplyParamPrefix(Transform):
+    """Obfuscate the token name inside of a ":paramref:" reference
+    to prevent Sphinx from resolving the node
+    and generating a reference node that doesn't look the way we want it to.
+    Ensure that our own missing-reference resolver is used.
+
+    """
+
+    default_priority = 210
+
+    def apply(self):
+        for ref in self.document.traverse(addnodes.pending_xref):
+            # look only at paramref
+            if ref["reftype"] != "paramref":
+                continue
+
+            # for params that explicitly have ".params." in the reference
+            # source, let those just resolve normally.   this is not
+            # really expected but it seems to work already.
+            if "params." in ref["reftarget"]:
+                continue
+
+            target_tokens = ref["reftarget"].split(".")
+
+            # apply a token to the link that will completely prevent
+            # Sphinx from ever resolving this node, because WE want to
+            # resolve and render the reference node, ALWAYS, THANK YOU!
+            target_tokens[-1] = "_sphinx_paramlinks_" + target_tokens[-1]
+            ref["reftarget"] = ".".join(target_tokens)
+
+
 class LinkParams(Transform):
     # apply references targets and optional references
     # to nodes that contain our target text.
@@ -128,7 +151,7 @@ class LinkParams(Transform):
     def apply(self):
         is_html = _is_html(self.document.settings.env.app)
 
-        # seach <strong> nodes, which will include the titles for
+        # search <strong> nodes, which will include the titles for
         # those :param: directives, looking for our special token.
         # then fix up the text within the node.
         for ref in self.document.traverse(nodes.strong):
@@ -203,7 +226,20 @@ def lookup_params(app, env, node, contnode):
 
     tokens = target.split(".")
     resolve_target = ".".join(tokens[0:-1])
-    paramname = tokens[-1]
+
+    # we are now cleared of Sphinx's resolver.
+    # remove _sphinx_paramlinks_ token from refid so we can search
+    # for the node normally.
+    paramname = tokens[-1].replace("_sphinx_paramlinks_", "")
+
+    # Remove _sphinx_paramlinks_ obfuscation string from all text nodes
+    # for rendering.
+    for replnode in (node, contnode):
+        for text_node in replnode.traverse(nodes.Text):
+            text_node.parent.replace(
+                text_node,
+                nodes.Text(text_node.replace("_sphinx_paramlinks_", "")),
+            )
 
     # emulate the approach within
     # sphinx.environment.BuildEnvironment.resolve_references
@@ -236,6 +272,7 @@ def lookup_params(app, env, node, contnode):
             newnode["refuri"] += ".params." + paramname
         elif "refid" in newnode:
             newnode["refid"] += ".params." + paramname
+
     return newnode
 
 
@@ -293,6 +330,7 @@ def build_index(app, doctree):
 
 def setup(app):
     app.add_transform(LinkParams)
+    app.add_transform(ApplyParamPrefix)
 
     # PyXRefRole is what the sphinx Python domain uses to set up
     # role nodes like "meth", "func", etc.  It produces a "pending xref"
@@ -302,8 +340,8 @@ def setup(app):
     app.connect("autodoc-process-docstring", autodoc_process_docstring)
     app.connect("builder-inited", add_stylesheet)
     app.connect("build-finished", copy_stylesheet)
-    app.connect("missing-reference", lookup_params)
     app.connect("doctree-read", build_index)
+    app.connect("missing-reference", lookup_params)
     return {
         "parallel_read_safe": True,
         "parallel_write_safe": True,

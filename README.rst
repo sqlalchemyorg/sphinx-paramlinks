@@ -59,9 +59,7 @@ Compatibility
 Python Compatibility
 --------------------
 
-The extension was developed on Python 2.7, but is compatible with at least
-Python 3.3 as well.  It contains one ``u''`` literal - these are supported again
-as of Python 3.3.
+sphinx-paramlinks is fully Python 3 compatible.
 
 Sphinx Compatibility
 --------------------
@@ -93,12 +91,4 @@ going into the Sphinx system, then do some transformations as the data
 comes back out.   This relies on as little of how Sphinx does its
 thing as possible, rather than going with custom domains and heavy use
 of injected APIs which may change in future releases.
-
-Future Enhancements / Missing Features
-======================================
-
-The extension currently does only ``:param:`` elements within the
-Python role, but could also be expanded to support other Python role
-elements such as ``:returns:``, ``:raises:``, etc., and perhaps also
-could be made to support similar features in other roles.
 
