@@ -5,7 +5,7 @@ Sphinx Paramlinks
 A `Sphinx <http://sphinx.pocoo.org/>`_ extension which allows ``:param:``
 directives within Python documentation to be linkable.
 
-This is an experimental, possibly-not-useful extension that's used by the
+This is an experimental extension that's used by the
 `SQLAlchemy <http://www.sqlalchemy.org>`_ project and related projects.
 
 Configuration
