@@ -309,7 +309,13 @@ def build_index(app, doctree):
         doc_entries = entries[docname]
         _indexentries(app.env)[docname].extend(doc_entries)
 
-        if LooseVersion(__version__) >= LooseVersion("3.0.0"):
+        if LooseVersion(__version__) >= LooseVersion("4.0.0"):
+            for entry in doc_entries:
+                sing, desc, ref, extra = entry[:4]
+                app.env.domains["py"].data["objects"][ref] = ObjectEntry(
+                    docname, ref, "parameter", False
+                )
+        elif LooseVersion(__version__) >= LooseVersion("3.0.0"):
             for entry in doc_entries:
                 sing, desc, ref, extra = entry[:4]
                 app.env.domains["py"].data["objects"][ref] = ObjectEntry(
