@@ -225,6 +225,14 @@ def lookup_params(app, env, node, contnode):
     target = node["reftarget"]
 
     tokens = target.split(".")
+
+    # if we just have :paramref:`arg` and not :paramref:`namespace.arg`,
+    # we must assume that the current namespace is meant.
+    if tokens == [target]:
+        #  Let's extract it from the node's source and prepend it, if the source is available
+        if node.souce and '.' in node.source:
+            tokens.insert(0, node.source.rsplit('.', maxsplit=1)[-1])
+
     resolve_target = ".".join(tokens[0:-1])
 
     # we are now cleared of Sphinx's resolver.
