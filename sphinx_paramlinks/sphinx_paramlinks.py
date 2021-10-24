@@ -230,7 +230,7 @@ def lookup_params(app, env, node, contnode):
     # we must assume that the current namespace is meant.
     if tokens == [target]:
         #  Let's extract it from the node's source and prepend it, if the source is available
-        if node.souce and '.' in node.source:
+        if node.source and '.' in node.source:
             tokens.insert(0, node.source.rsplit('.', maxsplit=1)[-1])
 
     resolve_target = ".".join(tokens[0:-1])
