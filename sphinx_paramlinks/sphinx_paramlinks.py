@@ -225,6 +225,20 @@ def lookup_params(app, env, node, contnode):
     target = node["reftarget"]
 
     tokens = target.split(".")
+
+    # if we just have :paramref:`arg` and not :paramref:`namespace.arg`,
+    # we must assume that the current namespace is meant.
+    if tokens == [target]:
+        #
+        # node.source is expected to look like:
+        # /path/to/file.py:docstring of module.clsname.methname
+        #
+        docstring_match = re.match(r".*?:docstring of (.*)", node.source)
+        if docstring_match:
+            full_attr_path = docstring_match.group(1)
+            fn_name = full_attr_path.split(".")[-1]
+            tokens.insert(0, fn_name)
+
     resolve_target = ".".join(tokens[0:-1])
 
     # we are now cleared of Sphinx's resolver.
