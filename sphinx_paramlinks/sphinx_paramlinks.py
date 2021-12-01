@@ -1,5 +1,6 @@
 #!coding: utf-8
 from distutils.version import LooseVersion
+from enum import Enum
 import os
 import re
 
@@ -29,6 +30,13 @@ def _is_html(app):
 
 
 # https://www.sphinx-doc.org/en/master/extdev/deprecated.html
+
+# Constants for link styles
+class HyperlinkStyle(Enum):
+    NONE = "none"
+    NAME = "name"
+    LINK_SYMBOL = "link_symbol"
+    BOTH = "both"
 
 
 def _indexentries(env):
@@ -149,6 +157,15 @@ class LinkParams(Transform):
     default_priority = 210
 
     def apply(self):
+        link_style = HyperlinkStyle[
+            (
+                self.document.settings.env.app
+            ).config.paramlinks_hyperlink_param.upper()
+        ]
+
+        if link_style is HyperlinkStyle.NONE:
+            return
+
         is_html = _is_html(self.document.settings.env.app)
 
         # search <strong> nodes, which will include the titles for
@@ -171,7 +188,9 @@ class LinkParams(Transform):
                     # add the "p" thing only if we're the HTML builder.
 
                     # using a real ¶, surprising, right?
-                    # http://docutils.sourceforge.net/FAQ.html#how-can-i-represent-esoteric-characters-e-g-character-entities-in-a-document
+                    # http://docutils.sourceforge.net/FAQ.html
+                    # #how-can-i-represent-esoteric-characters-
+                    # e-g-character-entities-in-a-document
 
                     # "For example, say you want an em-dash (XML
                     # character entity &mdash;, Unicode character
@@ -197,19 +216,48 @@ class LinkParams(Transform):
                     else:
                         return
 
-                    ref.parent.insert(
-                        pos + 1,
-                        nodes.reference(
+                    refparent = ref.parent
+
+                    if link_style in (
+                        HyperlinkStyle.NAME,
+                        HyperlinkStyle.BOTH,
+                    ):
+                        # If the parameter name should be a href, we wrap it
+                        # into an <a></a> tag
+                        element = refparent.pop(pos)
+
+                        # note this is expected to be the same....
+                        # assert element is ref
+
+                        newnode = nodes.reference(
                             "",
                             "",
-                            nodes.Text(u"¶", u"¶"),
+                            # needed to avoid recursion overflow
+                            element.deepcopy(),
                             refid=refid,
-                            # paramlink is our own CSS class, headerlink
-                            # is theirs.  Trying to get everything we can for
-                            # existing symbols...
-                            classes=["paramlink", "headerlink"],
-                        ),
-                    )
+                            classes=["paramname"],
+                        )
+                        refparent.insert(pos, newnode)
+
+                    if link_style in (
+                        HyperlinkStyle.LINK_SYMBOL,
+                        HyperlinkStyle.BOTH,
+                    ):
+                        # If there should be a link symbol after the parameter
+                        # name, insert it here
+                        refparent.insert(
+                            pos + 1,
+                            nodes.reference(
+                                "",
+                                "",
+                                nodes.Text(u"¶", u"¶"),
+                                refid=refid,
+                                # paramlink is our own CSS class, headerlink
+                                # is theirs.  Trying to get everything we can
+                                # for existing symbols...
+                                classes=["paramlink", "headerlink"],
+                            ),
+                        )
 
 
 def lookup_params(app, env, node, contnode):
@@ -281,7 +329,7 @@ def lookup_params(app, env, node, contnode):
 
     if newnode is not None:
         # assuming we found it, tack the paramname back onto to the final
-        # URI.
+        # URI
         if "refuri" in newnode:
             newnode["refuri"] += ".params." + paramname
         elif "refid" in newnode:
@@ -292,7 +340,8 @@ def lookup_params(app, env, node, contnode):
 
 def add_stylesheet(app):
     # changed in 1.8 from add_stylesheet()
-    # https://www.sphinx-doc.org/en/master/extdev/appapi.html#sphinx.application.Sphinx.add_css_file
+    # https://www.sphinx-doc.org/en/master/extdev/appapi.html
+    # #sphinx.application.Sphinx.add_css_file
     app.add_css_file("sphinx_paramlinks.css")
 
 
@@ -352,6 +401,16 @@ def setup(app):
     app.add_transform(LinkParams)
     app.add_transform(ApplyParamPrefix)
 
+    # Make sure that default is are the same as in LinkParams
+    # When config changes, the whole env needs to be rebuild since
+    # LinkParams is applied while building the doctrees
+    app.add_config_value(
+        "paramlinks_hyperlink_param",
+        HyperlinkStyle.LINK_SYMBOL.name,
+        "env",
+        [str],
+    )
+
     # PyXRefRole is what the sphinx Python domain uses to set up
     # role nodes like "meth", "func", etc.  It produces a "pending xref"
     # sphinx node along with contextual information.
@@ -362,6 +421,7 @@ def setup(app):
     app.connect("build-finished", copy_stylesheet)
     app.connect("doctree-read", build_index)
     app.connect("missing-reference", lookup_params)
+
     return {
         "parallel_read_safe": True,
         "parallel_write_safe": True,
