@@ -281,11 +281,15 @@ def lookup_params(app, env, node, contnode):
 
     if newnode is not None:
         # assuming we found it, tack the paramname back onto to the final
-        # URI.
+        # URI, if it exists in the index.
         if "refuri" in newnode:
             newnode["refuri"] += ".params." + paramname
+            if not app.env.domains["py"].data["objects"].get(newnode["refuri"].split('#')[-1]):
+                return
         elif "refid" in newnode:
             newnode["refid"] += ".params." + paramname
+            if not app.env.domains["py"].data["objects"].get(newnode["refid"].split('#')[-1]):
+                return
 
     return newnode
 
