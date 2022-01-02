@@ -20,15 +20,25 @@ Just turn it on in ``conf.py``::
                 # ...
             ]
 
-Stylesheet
-==========
+Since version 0.5.3, you can modify how clickable hyperlinks are placed around the names of
+the parameter using the ``paramlinks_hyperlink_param`` setting in ``conf.py``::
 
-The paragraph link involves a short stylesheet, to allow the links to
-be visible when hovered.  This sheet is called
-``sphinx_paramlinks.css`` and the plugin will copy it to the ``_static``
-directory of the output automatically.   The stylesheet is added to the
-``css_files`` list present in the template namespace for Sphinx via the
-``Sphinx.add_stylesheet()`` hook.
+    paramlinks_hyperlink_param='name'
+
+This parameter accepts the following values:
+
+* ``'none'``: No link will be be inserted. The parameter still has a target
+  attached to it so that you can e.g. jump to it from the search.
+
+* ``'name'``: The parameter name is a clickable hyperlink.
+
+* ``'link_symbol'``: A clickable link symbol is inserted after the parameter
+  name (but before an eventual type specification). By default, this symbol
+  only shows when hovering the parameter description (see below)
+
+* ``'name_and_symbol'``: link both the name and also generate a link symbol.
+
+The default is ``paramlinks_hyperlink_param = 'link_symbol'``.
 
 Features
 ========
@@ -52,6 +62,43 @@ Features
 * The paramlinks are also added to the master index as well as the list
   of domain objects, which allows them to be searchable through the
   searchindex.js system.  (new in 0.3.0)
+
+Stylesheet
+==========
+
+The paragraph link involves a short stylesheet, to allow the links to
+be visible when hovered.  This sheet is called
+``sphinx_paramlinks.css`` and the plugin will copy it to the ``_static``
+directory of the output automatically. The stylesheet is added to the
+``css_files`` list present in the template namespace for Sphinx via the
+``Sphinx.add_stylesheet()`` hook.
+
+Customization
+-------------
+
+To customize the link styling, you can override the configuration of
+``sphinx_paramlinks.css`` by adding a custom style sheet via::
+
+     app.add_css_file("path/to/custom.css")
+
+If the parameter name is a hyperlink, the HTML code will look something like
+this::
+
+     <a class="paramname reference internal" href="#package.method.params.parameter_name">
+          <strong>parameter_name</strong>
+     </a>
+
+The class ``paramname`` is defined by ``sphinx-paramlinks`` and can be used to
+customize the styling.
+
+If a link symbol is inserted after the hyperlink, the HTML code will look
+something like this::
+
+     <a class="paramlink headerlink reference internal" href="#package.method.params.parameter_name">¶</a>
+
+The class ``paramlink`` is defined by ``sphinx-paramlinks`` and can be used to
+customize the styling.
+
 
 Compatibility
 =============
