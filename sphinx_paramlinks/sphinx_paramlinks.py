@@ -36,7 +36,7 @@ class HyperlinkStyle(Enum):
     NONE = "none"
     NAME = "name"
     LINK_SYMBOL = "link_symbol"
-    BOTH = "both"
+    NAME_AND_SYMBOL = "name_and_symbol"
 
 
 def _indexentries(env):
@@ -157,13 +157,19 @@ class LinkParams(Transform):
     default_priority = 210
 
     def apply(self):
-        config_value = self.document.settings.env.app.config.paramlinks_hyperlink_param
+        config_value = (
+            self.document.settings.env.app.config.paramlinks_hyperlink_param
+        )
         try:
             link_style = HyperlinkStyle[config_value.upper()]
         except KeyError as exc:
             raise ValueError(
-                f"Unknown value {repr(config_value)} for 'paramlinks_hyperlink_param'. "
-                f"Must be one of {', '.join(repr(member.value) for member in HyperlinkStyle)}."
+                f"Unknown value {repr(config_value)} for "
+                f"'paramlinks_hyperlink_param'. "
+                f"Must be one of "
+                f"""{
+                    ', '.join(repr(member.value) for member in HyperlinkStyle)
+                }."""
             ) from exc
 
         if link_style is HyperlinkStyle.NONE:
@@ -223,7 +229,7 @@ class LinkParams(Transform):
 
                     if link_style in (
                         HyperlinkStyle.NAME,
-                        HyperlinkStyle.BOTH,
+                        HyperlinkStyle.NAME_AND_SYMBOL,
                     ):
                         # If the parameter name should be a href, we wrap it
                         # into an <a></a> tag
@@ -244,7 +250,7 @@ class LinkParams(Transform):
 
                     if link_style in (
                         HyperlinkStyle.LINK_SYMBOL,
-                        HyperlinkStyle.BOTH,
+                        HyperlinkStyle.NAME_AND_SYMBOL,
                     ):
                         # If there should be a link symbol after the parameter
                         # name, insert it here
@@ -253,7 +259,7 @@ class LinkParams(Transform):
                             nodes.reference(
                                 "",
                                 "",
-                                nodes.Text(u"¶", u"¶"),
+                                nodes.Text("¶", "¶"),
                                 refid=refid,
                                 # paramlink is our own CSS class, headerlink
                                 # is theirs.  Trying to get everything we can

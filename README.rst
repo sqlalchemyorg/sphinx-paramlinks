@@ -36,7 +36,7 @@ This parameter accepts the following values:
   name (but before an eventual type specification). By default, this symbol
   only shows when hovering the parameter description (see below)
 
-* ``'both'``: link both the name and also generate a link symbol.
+* ``'name_and_symbol'``: link both the name and also generate a link symbol.
 
 The default is ``paramlinks_hyperlink_param = 'link_symbol'``.
 
