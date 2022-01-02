@@ -157,11 +157,14 @@ class LinkParams(Transform):
     default_priority = 210
 
     def apply(self):
-        link_style = HyperlinkStyle[
-            (
-                self.document.settings.env.app
-            ).config.paramlinks_hyperlink_param.upper()
-        ]
+        config_value = self.document.settings.env.app.config.paramlinks_hyperlink_param
+        try:
+            link_style = HyperlinkStyle[config_value.upper()]
+        except KeyError as exc:
+            raise ValueError(
+                f"Unknown value {repr(config_value)} for 'paramlinks_hyperlink_param'. "
+                f"Must be one of {', '.join(repr(member.value) for member in HyperlinkStyle)}."
+            ) from exc
 
         if link_style is HyperlinkStyle.NONE:
             return

@@ -20,7 +20,7 @@ Just turn it on in ``conf.py``::
                 # ...
             ]
 
-You can modify how clickable hyperlinks are placed around the names of
+Since version 0.5.3, you can modify how clickable hyperlinks are placed around the names of
 the parameter using the ``paramlinks_hyperlink_param`` setting in ``conf.py``::
 
     paramlinks_hyperlink_param='name'
@@ -39,8 +39,6 @@ This parameter accepts the following values:
 * ``'both'``: link both the name and also generate a link symbol.
 
 The default is ``paramlinks_hyperlink_param = 'link_symbol'``.
-
-.. versionadded:: 0.5.3
 
 Features
 ========
