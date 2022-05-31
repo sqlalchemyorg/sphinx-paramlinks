@@ -101,7 +101,7 @@ def autodoc_process_docstring(app, what, name, obj, options, lines):
                 paramname,
             )
 
-        line = re.sub(r"^:(kwarg|param) ([^:]+? )?([^:]+?):", cvt, line)
+        line = re.sub(r"^:(keyword|param) ([^:]+? )?([^:]+?):", cvt, line)
         line = re.sub(r"^:(kwtype|type) ([^:]+? )?([^:]+?):", secondary_cvt, line)
         return line
 
