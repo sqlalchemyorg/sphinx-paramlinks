@@ -73,7 +73,7 @@ def autodoc_process_docstring(app, what, name, obj, options, lines):
             name = name[0:-9]
 
         def cvt(m):
-            modifier, objname, paramname = m.group(1) or "", name, m.group(2)
+            role, modifier, objname, paramname = m.group(1), m.group(2) or "", name, m.group(3)
             refname = _refname_from_paramname(paramname, strip_markup=True)
             item = (
                 "single",
@@ -85,22 +85,24 @@ def autodoc_process_docstring(app, what, name, obj, options, lines):
                 item += (None,)
 
             doc_idx.append(item)
-            return ":param %s_sphinx_paramlinks_%s.%s:" % (
+            return ":%s %s_sphinx_paramlinks_%s.%s:" % (
+                role,
                 modifier,
                 objname,
                 paramname,
             )
 
         def secondary_cvt(m):
-            modifier, objname, paramname = m.group(1) or "", name, m.group(2)
-            return ":type %s_sphinx_paramlinks_%s.%s:" % (
+            role, modifier, objname, paramname = m.group(1), m.group(2) or "", name, m.group(3)
+            return ":%s %s_sphinx_paramlinks_%s.%s:" % (
+                role,
                 modifier,
                 objname,
                 paramname,
             )
 
-        line = re.sub(r"^:param ([^:]+? )?([^:]+?):", cvt, line)
-        line = re.sub(r"^:type ([^:]+? )?([^:]+?):", secondary_cvt, line)
+        line = re.sub(r"^:(kwarg|param) ([^:]+? )?([^:]+?):", cvt, line)
+        line = re.sub(r"^:(kwtype|type) ([^:]+? )?([^:]+?):", secondary_cvt, line)
         return line
 
     if what in ("function", "method", "class"):
