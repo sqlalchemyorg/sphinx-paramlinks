@@ -1,12 +1,10 @@
 #!coding: utf-8
-from distutils.version import LooseVersion
 from enum import Enum
 import os
 import re
 
 from docutils import nodes
 from docutils.transforms import Transform
-from sphinx import __version__
 from sphinx import addnodes
 from sphinx.domains import ObjType
 from sphinx.domains.python import ObjectEntry
@@ -30,6 +28,7 @@ def _is_html(app):
 
 
 # https://www.sphinx-doc.org/en/master/extdev/deprecated.html
+
 
 # Constants for link styles
 class HyperlinkStyle(Enum):
@@ -73,7 +72,12 @@ def autodoc_process_docstring(app, what, name, obj, options, lines):
             name = name[0:-9]
 
         def cvt(m):
-            role, modifier, objname, paramname = m.group(1), m.group(2) or "", name, m.group(3)
+            role, modifier, objname, paramname = (
+                m.group(1),
+                m.group(2) or "",
+                name,
+                m.group(3),
+            )
             refname = _refname_from_paramname(paramname, strip_markup=True)
             item = (
                 "single",
@@ -81,8 +85,7 @@ def autodoc_process_docstring(app, what, name, obj, options, lines):
                 "%s.params.%s" % (objname, refname),
                 "",
             )
-            if LooseVersion(__version__) >= LooseVersion("1.4.0"):
-                item += (None,)
+            item += (None,)
 
             doc_idx.append(item)
             return ":%s %s_sphinx_paramlinks_%s.%s:" % (
@@ -93,7 +96,12 @@ def autodoc_process_docstring(app, what, name, obj, options, lines):
             )
 
         def secondary_cvt(m):
-            role, modifier, objname, paramname = m.group(1), m.group(2) or "", name, m.group(3)
+            role, modifier, objname, paramname = (
+                m.group(1),
+                m.group(2) or "",
+                name,
+                m.group(3),
+            )
             return ":%s %s_sphinx_paramlinks_%s.%s:" % (
                 role,
                 modifier,
@@ -102,7 +110,9 @@ def autodoc_process_docstring(app, what, name, obj, options, lines):
             )
 
         line = re.sub(r"^:(keyword|param) ([^:]+? )?([^:]+?):", cvt, line)
-        line = re.sub(r"^:(kwtype|type) ([^:]+? )?([^:]+?):", secondary_cvt, line)
+        line = re.sub(
+            r"^:(kwtype|type) ([^:]+? )?([^:]+?):", secondary_cvt, line
+        )
         return line
 
     if what in ("function", "method", "class"):
@@ -383,27 +393,11 @@ def build_index(app, doctree):
         doc_entries = entries[docname]
         _indexentries(app.env)[docname].extend(doc_entries)
 
-        if LooseVersion(__version__) >= LooseVersion("4.0.0"):
-            for entry in doc_entries:
-                sing, desc, ref, extra = entry[:4]
-                app.env.domains["py"].data["objects"][ref] = ObjectEntry(
-                    docname, ref, "parameter", False
-                )
-        elif LooseVersion(__version__) >= LooseVersion("3.0.0"):
-            for entry in doc_entries:
-                sing, desc, ref, extra = entry[:4]
-                app.env.domains["py"].data["objects"][ref] = ObjectEntry(
-                    docname,
-                    ref,
-                    "parameter",
-                )
-        else:
-            for entry in doc_entries:
-                sing, desc, ref, extra = entry[:4]
-                app.env.domains["py"].data["objects"][ref] = (
-                    docname,
-                    "parameter",
-                )
+        for entry in doc_entries:
+            sing, desc, ref, extra = entry[:4]
+            app.env.domains["py"].data["objects"][ref] = ObjectEntry(
+                docname, ref, "parameter", False
+            )
 
     _indexentries(app.env).pop("_sphinx_paramlinks_index")
 
