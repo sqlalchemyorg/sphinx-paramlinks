@@ -301,8 +301,12 @@ def lookup_params(app, env, node, contnode):
         #
         # node.source is expected to look like:
         # /path/to/file.py:docstring of module.clsname.methname
+        # or:
+        # docstring of module.clsname.methname
         #
-        docstring_match = re.match(r".*?:docstring of (.*)", node.source)
+        # as the path component can be optional - we use non-capturing group (?:<regex>)
+        # to potentially discard it.
+        docstring_match = re.match(r"(?:.*?:|^)docstring of (.*)", node.source)
         if docstring_match:
             full_attr_path = docstring_match.group(1)
             fn_name = full_attr_path.split(".")[-1]
